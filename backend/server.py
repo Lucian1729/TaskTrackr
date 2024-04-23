@@ -1,5 +1,5 @@
-from backend.raft.consensus import Node
-from backend.raft.consensus import FOLLOWER, LEADER
+from consensus import Node
+from consensus import FOLLOWER, LEADER
 from flask import Flask, request, jsonify
 import sys
 import logging
