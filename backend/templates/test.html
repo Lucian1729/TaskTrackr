@@ -194,8 +194,8 @@
                 data.forEach(task => {
                     var listItem = document.createElement('li');
                     listItem.className = 'task-item';
-                    listItem.textContent = task[0];
-                    listItem.setAttribute('onclick', `showTaskDetails('${task.title}')`);
+                    listItem.textContent = task[1];
+                    listItem.setAttribute('onclick', `showTaskDetails('${task[0]}')`);
                     taskList.appendChild(listItem);
                 });
             }
@@ -251,51 +251,76 @@
             }
         }
 
-        function showTaskDetails(taskTitle) {
+        function showTaskDetails(task_id) {
             var taskDetailsContainer = document.querySelector('.task-details-container');
             var taskDetailsForm = document.querySelector('.task-details-form');
             var taskForm = taskDetailsForm.querySelector('form');
 
-            var taskDetails = {
-                title: taskTitle,
-                description: 'Description for ' + taskTitle,
-                dueDate: '2024-04-19', // Example due date
-                priority: 'High', // Example priority
-                assignedUser: 'John Doe' // Example assigned user
-            };
+            function getTaskInfo(address){
+                fetch(address+'/req', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        payload: {
+                            key: 'get_task',
+                            username: window.localStorage.getItem("username"),
+                            task: task_id
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'success') {
+                        data.payload.forEach(taskDetails => {
+                            taskForm.elements['title'].value = taskDetails[0];
+                            taskForm.elements['description'].value = taskDetails[1];
+                            var dateObject = new Date(taskDetails[2]);
+                            taskForm.elements['dueDate'].value = dateObject.toISOString().substring(0, 10);
+                            taskForm.elements['priority'].value = taskDetails[3];
+                            taskForm.elements['status'].value = taskDetails[4];
+                        })
 
-            // Populate task details in the form
-            taskForm.elements['title'].value = taskDetails.title;
-            taskForm.elements['description'].value = taskDetails.description;
-            taskForm.elements['dueDate'].value = taskDetails.dueDate;
-            taskForm.elements['priority'].value = taskDetails.priority;
-            taskForm.elements['assignedUser'].value = taskDetails.assignedUser;
+                        if(!taskDetailsForm.style.visibility || taskDetailsForm.style.visibility==='hidden'){
+                            var taskcontainer = document.querySelector('.task-container')
+                            var createTaskForm = document.getElementById('createTaskForm');
+                            if(taskcontainer.children.createTaskForm){
+                                var createtaskcontainer = document.querySelector('.create-task-container')
+                                createTaskForm.classList.toggle('show')
+                                setTimeout(function () {
+                                    createTaskForm.style.visibility = 'hidden'
+                                    createtaskcontainer.appendChild(createTaskForm);
+                                }, 400);
+                            }
+                            var taskList = document.querySelector('.task-list');
+                            taskList.classList.add('reduce-width');
+                            taskDetailsForm.style.display = 'block';
+                            taskDetailsForm.style.visibility = 'visible'
+                            taskcontainer.appendChild(taskDetailsForm);
 
-            if(!taskDetailsForm.style.visibility || taskDetailsForm.style.visibility==='hidden'){
-                var taskcontainer = document.querySelector('.task-container')
-                var createTaskForm = document.getElementById('createTaskForm');
-                if(taskcontainer.children.createTaskForm){
-                    var createtaskcontainer = document.querySelector('.create-task-container')
-                    createTaskForm.classList.toggle('show')
-                    setTimeout(function () {
-                        createTaskForm.style.visibility = 'hidden'
-                        createtaskcontainer.appendChild(createTaskForm);
-                    }, 400);
-                }
-                var taskList = document.querySelector('.task-list');
-                taskList.classList.add('reduce-width');
-                taskDetailsForm.style.display = 'block';
-                taskDetailsForm.style.visibility = 'visible'
-                taskcontainer.appendChild(taskDetailsForm);
-
-                setTimeout(function () {
-                    taskDetailsForm.classList.toggle('show')
-                }, 400);
+                            setTimeout(function () {
+                                taskDetailsForm.classList.toggle('show')
+                            }, 400);
+                        }
+                    }
+                    else if(data.payload){
+                        getTaskInfo(data.payload.message)
+                    }
+                    else {
+                        console.log('Retrieve failed', data.reason);
+                        alert('Retrieve failed: ' + data.reason);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while retrieving. Please try again later.');
+                })
             }
+            getTaskInfo(window.location.href.split('/dashboard')[0])
         }
 
         function createtask(event) {
-            console.log("Hello")
             event.preventDefault()
             var form = document.getElementById('task-form');
             var formData = {};

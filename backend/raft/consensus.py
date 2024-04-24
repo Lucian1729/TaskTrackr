@@ -40,7 +40,7 @@ class Node():
         self.addr = my_ip
         self.fellow = fellow
         self.lock = threading.Lock()
-        self.mydb = mysql.connector.connect(host="localhost", user="prajwal", password="Pra12345!", database="task_management")
+        self.mydb = mysql.connector.connect(host="localhost", user="prajwal", password="Pra12345!", database="task_management_" + my_ip[-1])
         self.log = []
         self.staged = None
         self.term = 0
@@ -116,7 +116,8 @@ class Node():
             "term": self.term,
             "addr": self.addr,
             "action": "commit",
-            "payload": self.log[-1]
+            "payload": self.log[-1],
+            "commitIdx": self.commitIdx
         }
         reply = send(follower, route, first_message)
         if reply and reply.json()["commitIdx"] < self.commitIdx:
@@ -169,7 +170,7 @@ class Node():
                 elif self.commitIdx <= msg["commitIdx"]:
                     if not self.staged:
                         self.staged = msg["payload"]
-                    # self.commit()
+                    self.commit()
 
         return self.term, self.commitIdx
 
@@ -222,21 +223,21 @@ class Node():
                 sql_check = "SELECT user_id FROM users WHERE username = %s"
                 cursor.execute(sql_check, (username,))
                 result = cursor.fetchone()
-                sql = "SELECT title FROM tasks WHERE user_id = %s"
+                sql = "SELECT task_id, title FROM tasks WHERE user_id = %s"
                 cursor.execute(sql, (result[0],))
                 data = cursor.fetchall()
                 print(data)
                 return data
             
-        if key == "get_tasks":
+        if key == "get_task":
             username = payload["username"]
             task = payload["task"]
             with self.mydb.cursor() as cursor:
                 sql_check = "SELECT user_id FROM users WHERE username = %s"
                 cursor.execute(sql_check, (username,))
                 result = cursor.fetchone()
-                sql = "SELECT * FROM tasks WHERE title = %s AND user_id = %s"
-                cursor.execute(sql, (task, result[0],))
+                sql = "SELECT title, description, due_date, priority, status FROM tasks WHERE task_id = %s"
+                cursor.execute(sql, (task,))
                 data = cursor.fetchall()
                 print(data)
                 return data

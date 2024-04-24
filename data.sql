@@ -1,6 +1,6 @@
-drop database if exists task_management;
-create database task_management;
-use task_management
+drop database if exists task_management_0;
+create database task_management_0;
+use task_management_0
 
 -- Create the "users" table
 CREATE TABLE users (
