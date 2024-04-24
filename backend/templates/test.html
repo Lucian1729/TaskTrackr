@@ -194,7 +194,7 @@
                 data.forEach(task => {
                     var listItem = document.createElement('li');
                     listItem.className = 'task-item';
-                    listItem.textContent = task.title;
+                    listItem.textContent = task[0];
                     listItem.setAttribute('onclick', `showTaskDetails('${task.title}')`);
                     taskList.appendChild(listItem);
                 });
