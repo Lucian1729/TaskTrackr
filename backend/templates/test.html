@@ -154,52 +154,56 @@
             width: 40%;
         }
     </style>
-</head>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function getTasks(address){
+                fetch(address+'/req', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        payload: {
+                            key: 'view_names',
+                            username: window.localStorage.getItem("username")
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'success') {
+                        displayTasks(data.payload)
+                    }
+                    else if(data.payload){
+                        getTasks(data.payload.message)
+                    }
+                    else {
+                        console.log('Retrieve failed', data.reason);
+                        alert('Retrieve failed: ' + data.reason);
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+            }
+            getTasks(window.location.href.split('/dashboard')[0])
+        });
 
-<body>
-    <div class="container">
-        <ul class="task-list">
-            <!-- Task items displayed here -->
-            <li class="task-item" onclick="showTaskDetails('Task 1')">Task 1</li>
-            <li class="task-item" onclick="showTaskDetails('Task 2')">Task 2</li>
-            <li class="task-item" onclick="showTaskDetails('Task 3')">Task 3</li>
-        </ul>
-    </div>
-    <button onclick="toggleCreateTaskForm()" class="create-task">Create Task</button>
-
-    <div class="task-container"></div>
-
-    <div class="create-task-container">
-        <div class="create-task-form" id="createTaskForm" style="visibility: hidden;">
-            <p style="font-size: 25px; text-align: center; width: 100%; margin-top: 3px;">Create Task</p>
-            <form id="task-form">
-                <input type="text" name="title" placeholder="Title" required><br>
-                <textarea name="description" placeholder="Description"></textarea><br>
-                <input type="date" name="dueDate" required><br>
-                <select name="priority">
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                </select><br>
-                <!-- <input type="text" name="assignedUser" placeholder="Assigned User" required><br> -->
-                <button type="submit">Create Task</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="task-details-container" id="taskDetailsContainer">
-        <div class="task-details-form" id="taskDetailsForm" style="visibility: hidden;">
-            <p style="font-size: 25px; text-align: center; width: 100%; margin-top: 3px;">Task Details</p>
-            <form id="taskform">
-                <input type="text" name="title" placeholder="Title" readonly><br>
-                <textarea name="description" placeholder="Description" readonly></textarea><br>
-                <input type="date" name="dueDate" readonly><br>
-                <input type="text" name="priority" placeholder="Priority" readonly><br>
-                <input type="text" name="assignedUser" placeholder="Assigned User" readonly><br>
-            </form>
-        </div>
-    </div>
-
+        function displayTasks(data) {
+            var taskList = document.querySelector('.task-list');
+            taskList.innerHTML = '';
+            if(data.length){
+                data.forEach(task => {
+                    var listItem = document.createElement('li');
+                    listItem.className = 'task-item';
+                    listItem.textContent = task.title;
+                    listItem.setAttribute('onclick', `showTaskDetails('${task.title}')`);
+                    taskList.appendChild(listItem);
+                });
+            }
+            else{
+                taskList.innerHTML = "No tasks to show <br/> Create a new task for the tasks to show"
+            }
+        }
+    </script>
     <script>
         var k = 0;
         var somelse = 0;
@@ -288,14 +292,110 @@
                     taskDetailsForm.classList.toggle('show')
                 }, 400);
             }
-
         }
 
-        document.getElementById('task-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            console.log('Task created:', this.title.value);
-            location.reload();
-        });
-    </script>
+        function createtask(event) {
+            console.log("Hello")
+            event.preventDefault()
+            var form = document.getElementById('task-form');
+            var formData = {};
+
+            for (var i = 0; i < form.elements.length; i++) {
+                var element = form.elements[i];
+                if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
+                    formData[element.name] = element.value;
+                }
+            }
+
+            var title = formData.title || '';
+            var description = formData.description || '';
+            var dueDate = formData.dueDate || '';
+            var priority = formData.priority || '';
+            var status = formData.status || '';
+
+            console.log(title, description, dueDate, priority, status)
+
+            function sendtask(address){
+                fetch(address+'/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        payload: {
+                            key: 'add',
+                            username: window.localStorage.getItem("username"),
+                            task_name: title,
+                            due_date: dueDate,
+                            priority: priority,
+                            status: status,
+                            description: description,
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'success') {
+                        window.location.href = '/dashboard';
+                    }
+                    else if(data.payload){
+                        sendtask(data.payload.message)
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred saving task. Please try again later.');
+                })
+            }
+
+            sendtask(window.location.href.split('/dashboard')[0])
+        }
+
+    </script>  
+</head>
+
+<body>
+    <div class="container">
+        <ul class="task-list">
+            <!-- Task items displayed here -->
+            <!-- <li class="task-item" onclick="showTaskDetails('Task 1')">Task 1</li>
+            <li class="task-item" onclick="showTaskDetails('Task 2')">Task 2</li>
+            <li class="task-item" onclick="showTaskDetails('Task 3')">Task 3</li> -->
+        </ul>
+    </div>
+    <button onclick="toggleCreateTaskForm()" class="create-task">Create Task</button>
+
+    <div class="task-container"></div>
+
+    <div class="create-task-container">
+        <div class="create-task-form" id="createTaskForm" style="visibility: hidden;">
+            <p style="font-size: 25px; text-align: center; width: 100%; margin-top: 3px;">Create Task</p>
+            <form id="task-form" onsubmit="createtask(event)">
+                <input type="text" name="title" placeholder="Title" required><br>
+                <textarea name="description" placeholder="Description"></textarea><br>
+                <input type="date" name="dueDate" required><br>
+                <select name="priority">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select><br>
+                <input type="text" name="status" placeholder="Status" required><br>
+                <button type="submit">Create Task</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="task-details-container" id="taskDetailsContainer">
+        <div class="task-details-form" id="taskDetailsForm" style="visibility: hidden;">
+            <p style="font-size: 25px; text-align: center; width: 100%; margin-top: 3px;">Task Details</p>
+            <form id="taskform">
+                <input type="text" name="title" placeholder="Title" readonly><br>
+                <textarea name="description" placeholder="Description" readonly></textarea><br>
+                <input type="date" name="dueDate" readonly><br>
+                <input type="text" name="priority" placeholder="Priority" readonly><br>
+                <input type="text" name="status" placeholder="Status" readonly><br>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

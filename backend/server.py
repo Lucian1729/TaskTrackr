@@ -6,9 +6,7 @@ import sys
 import logging
 
 app = Flask(__name__)
-CORS(app, resources={r"/req": {"origins": "http://127.0.0.1:*"}})
-
-# value_get is the flask handle
+CORS(app, resources={r"/req": {"origins": "http://127.0.0.1:*"}, r"/request": {"origins": "http://127.0.0.1:*"}})
 
 @app.route('/authenticate', methods=['GET', 'POST'])
 def authenticate():

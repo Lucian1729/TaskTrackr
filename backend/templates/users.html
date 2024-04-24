@@ -168,7 +168,7 @@
             let password = document.getElementById('passwordsignup').value;
             let email = document.getElementById('emailsignup').value;
             function signuprequest(address){
-                fetch(data.payload.message+'/request', {
+                fetch(address+'/request', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -227,6 +227,7 @@
                 .then(data => {
                     if (data.code === 'success') {
                         console.log('Login successful');
+                        window.localStorage.setItem("username", username);
                         window.location.href = '/dashboard';
                     }
                     else if(data.payload){
