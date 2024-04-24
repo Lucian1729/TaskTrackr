@@ -161,140 +161,88 @@
         }
 
     </style>
-    <script>
+    <script>      
         function signup(event){
             event.preventDefault();
             let username = document.getElementById('usernamesignup').value;
             let password = document.getElementById('passwordsignup').value;
             let email = document.getElementById('emailsignup').value;
-
-            fetch('/request', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    payload: {
-                        key: 'register',
-                        username: username,
-                        password: password,
-                        email: email,
+            function signuprequest(address){
+                fetch(data.payload.message+'/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        payload: {
+                            key: 'register',
+                            username: username,
+                            password: password,
+                            email: email,
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'success') {
+                        console.log('Signup successful');
+                        window.location.href = '/authenticate';
+                    }
+                    else if(data.payload){
+                        signuprequest(data.payload.message) 
+                    }
+                    else {
+                        console.log('Signup failed:', data.reason);
+                        alert('Signup failed: ' + data.reason);
                     }
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.code === 'success') {
-                    console.log('Signup successful');
-                    window.location.href = '/authenticate';
-                } 
-                else if(data.payload){
-                    console.log(data.payload.message)
-                    fetch(data.payload.message+'/request', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            payload: {
-                                key: 'register',
-                                username: username,
-                                password: password,
-                                email: email,
-                            }
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.code === 'success') {
-                            console.log('Signup successful');
-                            window.location.href = '/authenticate';
-                        }
-                        else {
-                            console.log('Signup failed:', data.reason);
-                            alert('Signup failed: ' + data.reason);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while logging in. Please try again later.');
-                    })
-                }
-                else {
-                    console.log('Signup failed:', data.reason);
-                    alert('Signup failed: ' + data.reason);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while saving user. Please try again later.');
-            })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while logging in. Please try again later.');
+                })
+            }
+            signuprequest(window.location.href.split('/authenticate')[0])    
         }
 
         function login(event){
             event.preventDefault();
             let username = document.getElementById('usernamelogin').value;
             let password = document.getElementById('passwordlogin').value;
-
-            fetch('/req', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    payload: {
-                        key: 'login',
-                        username: username,
-                        password: password
+            
+            function loginrequest(address){
+                fetch(address+'/req', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        payload: {
+                            key: 'login',
+                            username: username,
+                            password: password
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'success') {
+                        console.log('Login successful');
+                        window.location.href = '/dashboard';
+                    }
+                    else if(data.payload){
+                        loginrequest(data.payload.message)
+                    }
+                    else {
+                        console.log('Login failed:', data.reason);
+                        alert('Login failed: ' + data.reason);
                     }
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.code === 'success') {
-                    console.log('Login successful');
-                    window.location.href = '/dashboard';
-                }
-                else if(data.payload){
-                    console.log(data.payload.message)
-                    fetch(data.payload.message+'/req', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            payload: {
-                                key: 'login',
-                                username: username,
-                                password: password
-                            }
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.code === 'success') {
-                            console.log('Login successful');
-                            window.location.href = '/dashboard';
-                        }
-                        else {
-                            console.log('Login failed:', data.reason);
-                            alert('Login failed: ' + data.reason);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while logging in. Please try again later.');
-                    })
-                }
-                else {
-                    console.log('Login failed:', data.reason);
-                    alert('Login failed: ' + data.reason);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while logging in. Please try again later.');
-            })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while logging in. Please try again later.');
+                })
+            }
+            loginrequest(window.location.href.split('/authenticate')[0])
         }
     </script>
 </head>
