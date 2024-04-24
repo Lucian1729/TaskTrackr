@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Signup</title>
+    <style>
+        body {
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            background-color: #cddfff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .form-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: absolute;
+            top: 15%;
+            left: 24%;
+            width: 50%;
+            height: 70%;
+        }
+
+        .form-container form {
+            margin-bottom: 20px;
+        }
+
+        .form-container.signup {
+            display: none;
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: blue;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-color: #3a89e8;
+        }
+
+        a {
+            color: blue;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #3a89e8;
+        }
+
+        @keyframes shrinkAndHide {
+            from {
+                transform: scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes growAndShow {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .input1{
+            width: 80%;
+            height: 10%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid black;
+            outline: none;
+            font-size: 25px;
+            padding-top: 7%;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            position: relative;
+            margin-bottom: 5%;
+        }
+
+        .input2{
+            width: 80%;
+            height: 10%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid black;
+            outline: none;
+            font-size: 22px;
+            padding-top: 7%;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            position: relative;
+            margin-bottom: auto;
+        }
+
+        #button1{
+            width: 90%;
+            height: 70px;
+            position: relative;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 8%;
+            color: black;
+            background-color: #f2d2a9;
+            border: 1px solid black;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-size: 30px;
+        }
+
+        #button1:hover{
+            color: #cddfff;
+            background-color: black;
+            transition: 1s;
+        }
+
+        #button2{
+            width: 90%;
+            height: 70px;
+            position: relative;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 9%;
+            color: black;
+            background-color: #f2d2a9;
+            border: 1px solid black;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-size: 30px;
+        }
+
+        #button2:hover{
+            color: #cddfff;
+            background-color: black;
+            transition: 1s;
+        }
+
+    </style>
+    <script>
+        function signup(event){
+            event.preventDefault();
+            let username = document.getElementById('usernamesignup').value;
+            let password = document.getElementById('passwordsignup').value;
+            let email = document.getElementById('emailsignup').value;
+
+            fetch('/request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    payload: {
+                        key: 'register',
+                        username: username,
+                        password: password,
+                        email: email,
+                    }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 'success') {
+                    console.log('Signup successful');
+                    window.location.href = '/authenticate';
+                } 
+                else if(data.payload){
+                    console.log(data.payload.message)
+                    fetch(data.payload.message+'/request', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            payload: {
+                                key: 'register',
+                                username: username,
+                                password: password,
+                                email: email,
+                            }
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code === 'success') {
+                            console.log('Signup successful');
+                            window.location.href = '/authenticate';
+                        }
+                        else {
+                            console.log('Signup failed:', data.reason);
+                            alert('Signup failed: ' + data.reason);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while logging in. Please try again later.');
+                    })
+                }
+                else {
+                    console.log('Signup failed:', data.reason);
+                    alert('Signup failed: ' + data.reason);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving user. Please try again later.');
+            })
+        }
+
+        function login(event){
+            event.preventDefault();
+            let username = document.getElementById('usernamelogin').value;
+            let password = document.getElementById('passwordlogin').value;
+
+            fetch('/req', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    payload: {
+                        key: 'login',
+                        username: username,
+                        password: password
+                    }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 'success') {
+                    console.log('Login successful');
+                    window.location.href = '/dashboard';
+                }
+                else if(data.payload){
+                    console.log(data.payload.message)
+                    fetch(data.payload.message+'/req', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            payload: {
+                                key: 'login',
+                                username: username,
+                                password: password
+                            }
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code === 'success') {
+                            console.log('Login successful');
+                            window.location.href = '/dashboard';
+                        }
+                        else {
+                            console.log('Login failed:', data.reason);
+                            alert('Login failed: ' + data.reason);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while logging in. Please try again later.');
+                    })
+                }
+                else {
+                    console.log('Login failed:', data.reason);
+                    alert('Login failed: ' + data.reason);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while logging in. Please try again later.');
+            })
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container login active" id="loginForm">
+            <p style="font-family: Georgia, 'Times New Roman', Times, serif; font-size: 40px; margin: 20px; margin-bottom: 0px;">Login</p>
+            <form id="login-form" onsubmit="login(event)">
+                <input type="text" name="username" placeholder="Username" class="input1" id="usernamelogin" required><br>
+                <input type="password" name="password" placeholder="Password" class="input1" id="passwordlogin" required><br>
+                <button type="submit" id="button1">Login</button>
+            </form>
+            <p style="font-family: Georgia, 'Times New Roman', Times, serif; font-size: 20px; margin: 20px; margin-bottom: 0px;">New User? <a href="#" onclick="showSignup()">Signup</a></p>
+        </div>
+        <div class="form-container signup" id="signupForm">
+            <p style="font-family: Georgia, 'Times New Roman', Times, serif; font-size: 40px; margin: 20px; margin-bottom: 0px;">Signup</p>
+            <form id="signup-form" onsubmit="signup(event)">
+                <input type="text" name="username" placeholder="Username" required class="input2" id="usernamesignup"><br>
+                <input type="email" name="email" placeholder="Email" required class="input2" id="emailsignup"><br>
+                <input type="password" name="password" placeholder="Password" required class="input2" id="passwordsignup"><br>
+                <button type="submit" id="button2">Signup</button>
+            </form>
+            <p style="font-family: Georgia, 'Times New Roman', Times, serif; font-size: 20px; margin: 20px; margin-bottom: 0px;">Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+        </div>
+    </div>
+    <script>
+        function showSignup() {
+            document.getElementById('loginForm').style.animation = 'shrinkAndHide 0.3s forwards';
+            setTimeout(function() {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'block';
+                document.getElementById('signupForm').style.animation = 'growAndShow 0.3s forwards';
+            }, 300);
+        }
+        function showLogin() {
+            document.getElementById('signupForm').style.animation = 'shrinkAndHide 0.3s forwards';
+            setTimeout(function() {
+                document.getElementById('signupForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('loginForm').style.animation = 'growAndShow 0.3s forwards';
+            }, 300);
+        }
+    </script>
+</body>
+</html>

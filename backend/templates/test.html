@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #cddfff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            position: absolute;
+            width: 100%;
+            top: 25%;
+            height: 75%;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .task-list {
+            position: relative;
+            width: 90%;
+            left: 5%;
+            list-style-type: none;
+            padding: 0;
+            transition: width 0.3s ease;
+        }
+
+        .task-item {
+            background-color: #f2d2a9;
+            padding: 20px;
+            margin-bottom: 10px;
+            border: 1px solid black;
+            border-radius: 5px;
+            /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+            cursor: pointer;
+            /* Added cursor pointer for task items */
+        }
+
+        .task-item:hover{
+            background-color: black;
+            color: white;
+            transition: 1s;
+        }
+
+        .task-container {
+            width: 40%;
+            margin-top: 20px;
+            transition: width 0.3s ease;
+        }
+
+        .create-task-form, .task-details-form {
+            position: absolute;
+            display: none;
+            top: 20%;
+            left: 50%;
+            height: 60%;
+            opacity: 0;
+            transform: scale(0.5);
+            transform-origin: top;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 40%;
+            transition: all 0.3s ease;
+        }
+
+        .create-task-form.show,
+        .task-details-form.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .create-task-form input,
+        .create-task-form textarea,
+        .create-task-form button,
+        .task-details-form input,
+        .task-details-form textarea,
+        .task-details-form button {
+            margin-bottom: 20px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            width: 100%;
+            resize: none;
+            outline: none;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid black;
+            font-size: 20px;
+            box-sizing: border-box;
+        }
+
+        .create-task-form textarea{
+            height: 100px;
+        }
+
+        .create-task-form select,
+        .create-task-form option{
+            width: 100%;
+            height: 45px;
+            border: 1px solid black;
+            font-size: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .create-task-form button,
+        .task-details-form button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .create-task{
+            width: 30%;
+            left: 5%;
+            top: 10%;
+            height: 70px;
+            position: absolute;
+            border-radius: 5px;
+            text-align: center;
+            color: black;
+            background-color: #f2d2a9;
+            border: 1px solid black;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-size: 30px;
+        }
+
+        .create-task:hover{
+            color: #cddfff;
+            background-color: black;
+            transition: 1s;
+        }
+
+        .create-task-form button:hover,
+        .task-details-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .reduce-width {
+            width: 40%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <ul class="task-list">
+            <!-- Task items displayed here -->
+            <li class="task-item" onclick="showTaskDetails('Task 1')">Task 1</li>
+            <li class="task-item" onclick="showTaskDetails('Task 2')">Task 2</li>
+            <li class="task-item" onclick="showTaskDetails('Task 3')">Task 3</li>
+        </ul>
+    </div>
+    <button onclick="toggleCreateTaskForm()" class="create-task">Create Task</button>
+
+    <div class="task-container"></div>
+
+    <div class="create-task-container">
+        <div class="create-task-form" id="createTaskForm" style="visibility: hidden;">
+            <p style="font-size: 25px; text-align: center; width: 100%; margin-top: 3px;">Create Task</p>
+            <form id="task-form">
+                <input type="text" name="title" placeholder="Title" required><br>
+                <textarea name="description" placeholder="Description"></textarea><br>
+                <input type="date" name="dueDate" required><br>
+                <select name="priority">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select><br>
+                <!-- <input type="text" name="assignedUser" placeholder="Assigned User" required><br> -->
+                <button type="submit">Create Task</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="task-details-container" id="taskDetailsContainer">
+        <div class="task-details-form" id="taskDetailsForm" style="visibility: hidden;">
+            <p style="font-size: 25px; text-align: center; width: 100%; margin-top: 3px;">Task Details</p>
+            <form id="taskform">
+                <input type="text" name="title" placeholder="Title" readonly><br>
+                <textarea name="description" placeholder="Description" readonly></textarea><br>
+                <input type="date" name="dueDate" readonly><br>
+                <input type="text" name="priority" placeholder="Priority" readonly><br>
+                <input type="text" name="assignedUser" placeholder="Assigned User" readonly><br>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var k = 0;
+        var somelse = 0;
+        function toggleCreateTaskForm() {
+            var taskList = document.querySelector('.task-list');
+            var taskcontainer = document.querySelector('.task-container')
+            var createTaskForm = document.getElementById('createTaskForm');
+
+            if(!createTaskForm.style.visibility || createTaskForm.style.visibility === 'hidden'){
+                var taskDetailsForm = document.querySelector('.task-details-form');
+                if(taskcontainer.children.taskDetailsForm){
+                    var taskDetailsContainer = document.querySelector('.task-details-container');
+                    taskDetailsForm.classList.toggle('show')
+                    console.log("create task if")
+                    setTimeout(function () {
+                        taskDetailsForm.style.visibility = 'hidden';
+                        taskDetailsForm.style.display = 'none';
+                        taskDetailsContainer.appendChild(taskDetailsForm);
+                        createTaskForm.style.visibility = 'visible'
+                        createTaskForm.style.display = 'block';
+                        taskList.classList.add('reduce-width');
+                        taskcontainer.appendChild(createTaskForm);
+                        setTimeout(function () {
+                            createTaskForm.classList.toggle('show');
+                        }, 100);
+                    }, 400);
+                }
+                else{
+                    console.log("create task else")
+                    createTaskForm.style.visibility = 'visible'
+                    createTaskForm.style.display = 'block';
+                    taskList.classList.add('reduce-width');
+                    taskcontainer.appendChild(createTaskForm);
+                    setTimeout(function () {
+                        createTaskForm.classList.toggle('show');
+                    }, 400);
+                }
+            }
+            else{
+                createTaskForm.classList.remove('show');
+                setTimeout(function () {
+                    createTaskForm.style.visibility = 'hidden'
+                    taskList.classList.toggle('reduce-width');
+                }, 400);
+            }
+        }
+
+        function showTaskDetails(taskTitle) {
+            var taskDetailsContainer = document.querySelector('.task-details-container');
+            var taskDetailsForm = document.querySelector('.task-details-form');
+            var taskForm = taskDetailsForm.querySelector('form');
+
+            var taskDetails = {
+                title: taskTitle,
+                description: 'Description for ' + taskTitle,
+                dueDate: '2024-04-19', // Example due date
+                priority: 'High', // Example priority
+                assignedUser: 'John Doe' // Example assigned user
+            };
+
+            // Populate task details in the form
+            taskForm.elements['title'].value = taskDetails.title;
+            taskForm.elements['description'].value = taskDetails.description;
+            taskForm.elements['dueDate'].value = taskDetails.dueDate;
+            taskForm.elements['priority'].value = taskDetails.priority;
+            taskForm.elements['assignedUser'].value = taskDetails.assignedUser;
+
+            if(!taskDetailsForm.style.visibility || taskDetailsForm.style.visibility==='hidden'){
+                var taskcontainer = document.querySelector('.task-container')
+                var createTaskForm = document.getElementById('createTaskForm');
+                if(taskcontainer.children.createTaskForm){
+                    var createtaskcontainer = document.querySelector('.create-task-container')
+                    createTaskForm.classList.toggle('show')
+                    setTimeout(function () {
+                        createTaskForm.style.visibility = 'hidden'
+                        createtaskcontainer.appendChild(createTaskForm);
+                    }, 400);
+                }
+                var taskList = document.querySelector('.task-list');
+                taskList.classList.add('reduce-width');
+                taskDetailsForm.style.display = 'block';
+                taskDetailsForm.style.visibility = 'visible'
+                taskcontainer.appendChild(taskDetailsForm);
+
+                setTimeout(function () {
+                    taskDetailsForm.classList.toggle('show')
+                }, 400);
+            }
+
+        }
+
+        document.getElementById('task-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            console.log('Task created:', this.title.value);
+            location.reload();
+        });
+    </script>
+</body>
+</html>

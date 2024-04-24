@@ -40,7 +40,7 @@ class Node():
         self.addr = my_ip
         self.fellow = fellow
         self.lock = threading.Lock()
-        self.mydb = mysql.connector.connect(host="localhost", user="<your-username>", password="<your-password>", database="task_management")
+        self.mydb = mysql.connector.connect(host="localhost", user="prajwal", password="Pra12345!", database="task_management")
         self.log = []
         self.staged = None
         self.term = 0
