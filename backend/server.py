@@ -1,25 +1,34 @@
-from backend.raft.consensus import Node
-from backend.raft.consensus import FOLLOWER, LEADER
-from flask import Flask, request, jsonify
+from raft.consensus import Node
+from raft.consensus import FOLLOWER, LEADER
+from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import sys
 import logging
 
 app = Flask(__name__)
+CORS(app, resources={r"/req": {"origins": "http://127.0.0.1:*"}})
 
 # value_get is the flask handle
-@app.route("/request", methods=['GET'])
+
+@app.route('/authenticate', methods=['GET', 'POST'])
+def authenticate():
+    return render_template('users.html')
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+    return render_template('test.html')
+
+@app.route("/req", methods=['POST'])
 def value_get():
     payload = request.json["payload"]
     reply = {"code": 'fail', 'payload': payload}
     if n.status == LEADER:
-        # request handle, reply is a dictionary
         result = n.handle_get(payload)
         if result == -1:
             reply = {"code": "fail", "reason": "Invalid"}
         else:
             reply = {"code": "success", "payload": result}
     elif n.status == FOLLOWER:
-        # redirect request
         reply["payload"]["message"] = n.leader
     return jsonify(reply)
 
@@ -42,11 +51,9 @@ def value_put():
         reply["payload"] = payload
     return jsonify(reply)
 
-
 # we reply to vote request
 @app.route("/vote_req", methods=['POST'])
 def vote_req():
-    # also need to let me know whether up-to-date or not
     term = request.json["term"]
     commitIdx = request.json["commitIdx"]
     staged = request.json["staged"]
@@ -54,14 +61,12 @@ def vote_req():
     message = {"choice": choice, "term": term}
     return jsonify(message) 
 
-
 @app.route("/heartbeat", methods=['POST'])
 def heartbeat():
     term, commitIdx = n.heartbeat_follower(request.json)
     # return anyway, if nothing received by leader, we are dead
     message = {"term": term, "commitIdx": commitIdx}
     return jsonify(message)
-
 
 # disable flask logging
 log = logging.getLogger('werkzeug')
@@ -73,15 +78,14 @@ if __name__ == "__main__":
         index = int(sys.argv[1])
         ip_list_file = sys.argv[2]
         ip_list = []
-        # open ip list file and parse all the ips
         with open(ip_list_file) as f:
             for ip in f:
                 ip_list.append(ip.strip())
         my_ip = ip_list.pop(index)
-        # print(ip_list)
+        
         http, host, port = my_ip.split(':')
-        # initialize node with ip list and its own ip
+        
         n = Node(ip_list, my_ip)
-        app.run(host="0.0.0.0", port=int(port), debug=False)
+        app.run(port=int(port), debug=False)
     else:
         print("usage: python server.py <index> <ip_list_file>")

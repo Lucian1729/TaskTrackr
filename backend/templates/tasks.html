@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 90%;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .task-list {
+      width: 90%;
+      list-style-type: none;
+      padding: 0;
+      transition: width 0.3s ease;
+    }
+
+    .task-item {
+      background-color: #fff;
+      padding: 20px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: pointer; /* Added cursor pointer for task items */
+    }
+
+    .create-task-container, .task-details-container {
+      width: 40%;
+      margin-top: 20px;
+      transition: width 0.3s ease;
+    }
+
+    .create-task-form, .task-details-form {
+      opacity: 0;
+      transform: scale(0.5);
+      transform-origin: top;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .create-task-form.show, .task-details-form.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .create-task-form input,
+    .create-task-form textarea,
+    .create-task-form button,
+    .task-details-form input,
+    .task-details-form textarea,
+    .task-details-form button {
+      margin-bottom: 10px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .create-task-form button,
+    .task-details-form button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    .create-task-form button:hover,
+    .task-details-form button:hover {
+      background-color: #0056b3;
+    }
+
+    .reduce-width {
+      width: 40%;
+    } 
+  </style>
+</head>
+<body>
+  <div class="container">
+    <ul class="task-list">
+      <!-- Task items displayed here -->
+      <li class="task-item" onclick="showTaskDetails('Task 1')">Task 1</li>
+      <li class="task-item" onclick="showTaskDetails('Task 2')">Task 2</li>
+      <li class="task-item" onclick="showTaskDetails('Task 3')">Task 3</li>
+    </ul>
+
+    <div class="create-task-container">
+      <button onclick="toggleCreateTaskForm()">Create Task</button>
+
+      <div class="create-task-form" id="createTaskForm">
+        <h2>Create Task</h2>
+        <form id="task-form">
+          <input type="text" name="title" placeholder="Title" required><br>
+          <textarea name="description" placeholder="Description"></textarea><br>
+          <input type="date" name="dueDate" required><br>
+          <select name="priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select><br>
+          <input type="text" name="assignedUser" placeholder="Assigned User" required><br>
+          <button type="submit">Create Task</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="task-details-container" id="taskDetailsContainer">
+      <div class="task-details-form" id="taskDetailsForm">
+        <h2>Task Details</h2>
+        <form id="taskform">
+          <input type="text" name="title" placeholder="Title" readonly><br>
+          <textarea name="description" placeholder="Description" readonly></textarea><br>
+          <input type="date" name="dueDate" readonly><br>
+          <input type="text" name="priority" placeholder="Priority" readonly><br>
+          <input type="text" name="assignedUser" placeholder="Assigned User" readonly><br>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleCreateTaskForm() {
+        var taskList = document.querySelector('.task-list');
+        taskList.classList.toggle('reduce-width');
+        setTimeout(function() {
+            var createTaskForm = document.getElementById('createTaskForm');
+            createTaskForm.classList.toggle('show');
+        }, 400);
+    }
+
+    function showTaskDetails(taskTitle) {
+      var taskDetailsContainer = document.querySelector('.task-details-container');
+      var taskDetailsForm = taskDetailsContainer.querySelector('.task-details-form');
+      var taskForm = taskDetailsForm.querySelector('form');
+
+      // Fetch task details based on task title (you can fetch details from server here)
+      var taskDetails = {
+        title: taskTitle,
+        description: 'Description for ' + taskTitle,
+        dueDate: '2024-04-19', // Example due date
+        priority: 'High', // Example priority
+        assignedUser: 'John Doe' // Example assigned user
+      };
+
+      // Populate task details in the form
+      taskForm.elements['title'].value = taskDetails.title;
+      taskForm.elements['description'].value = taskDetails.description;
+      taskForm.elements['dueDate'].value = taskDetails.dueDate;
+      taskForm.elements['priority'].value = taskDetails.priority;
+      taskForm.elements['assignedUser'].value = taskDetails.assignedUser;
+
+	  taskDetailsForm.classList.toggle('show');
+    }
+
+    document.getElementById('task-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      // Handle form submission (e.g., send data to server, add task to list)
+      console.log('Task created:', this.title.value);
+      // For demonstration, reload the HTML file after form submission
+      location.reload();
+    });
+  </script>
+</body>
+</html>
