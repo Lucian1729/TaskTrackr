@@ -310,6 +310,9 @@
             var taskDetailsContainer = document.querySelector('.task-details-container');
             var taskDetailsForm = document.querySelector('.task-details-form');
             var taskForm = taskDetailsForm.querySelector('form');
+            document.getElementById("save").style.display = 'none'
+            document.getElementById("edit").style.display = 'inline-block'
+            document.getElementById("delete").style.display = 'block'
 
             function getTaskInfo(address){
                 fetch(address+'/req', {
@@ -491,6 +494,7 @@
                     elements[i].removeAttribute("disabled");
                 }
             }
+            document.getElementById("delete").style.display = 'none'
 		}
 
         function createtask(event) {
