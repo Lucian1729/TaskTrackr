@@ -18,9 +18,49 @@
             min-height: 100vh;
         }
 
+        #menubar{
+            width: 95%;
+            position: fixed;
+            background-color: #202c37;
+            color: white;
+            height: 7%;
+            font-size: 35px;
+            text-align: left;
+            padding-left: 5%;
+            padding-top: 1.5%;
+            padding-bottom: 1%;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        #nameofuser{
+            color: white;
+            display: inline-block;
+        }
+
+        #logout{
+            position: relative;
+            display: inline-block;
+            left: 65%;
+            width: 10%;
+            height: 50px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-size: 25px;
+            border-radius: 5px;
+            border: 2px solid #202c37;
+            background-color: #f2d2a9;
+            color: black;
+        }
+
+        #logout:hover{
+            color: #cddfff;
+            background-color: black;
+            transition: 1s;
+        }
+
         .container {
             position: absolute;
-            width: 100%;
+            width: 90%;
+            left: 5%;
             top: 25%;
             height: 75%;
             display: flex;
@@ -33,6 +73,7 @@
             left: 5%;
             list-style-type: none;
             padding: 0;
+            font-size: 25px;
             transition: width 0.3s ease;
         }
 
@@ -42,6 +83,7 @@
             margin-bottom: 10px;
             border: 1px solid black;
             border-radius: 5px;
+            font-size: 25px;
             /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
             cursor: pointer;
             /* Added cursor pointer for task items */
@@ -64,7 +106,7 @@
             display: none;
             top: 20%;
             left: 50%;
-            height: 60%;
+            height: 65%;
             opacity: 0;
             transform: scale(0.5);
             transform-origin: top;
@@ -105,7 +147,9 @@
         }
 
         .create-task-form select,
-        .create-task-form option{
+        .create-task-form option,
+        .task-details-form select,
+		.task-details-form option{
             width: 100%;
             height: 45px;
             border: 1px solid black;
@@ -126,8 +170,8 @@
 
         .create-task{
             width: 30%;
-            left: 5%;
-            top: 10%;
+            left: 9.6%;
+            top: 15%;
             height: 70px;
             position: absolute;
             border-radius: 5px;
@@ -153,6 +197,16 @@
         .reduce-width {
             width: 40%;
         }
+
+        #edit{
+			display: inline-block;
+			width: 20%;
+		}
+
+		#save{
+			width: 20%;
+			display: none;
+		}
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -185,6 +239,7 @@
                 .catch(error => console.error('Error fetching data:', error));
             }
             getTasks(window.location.href.split('/dashboard')[0])
+            document.getElementById('nameofuser').innerText = "Welcome "+window.localStorage.getItem("username");
         });
 
         function displayTasks(data) {
@@ -280,6 +335,14 @@
                             taskForm.elements['dueDate'].value = dateObject.toISOString().substring(0, 10);
                             taskForm.elements['priority'].value = taskDetails[3];
                             taskForm.elements['status'].value = taskDetails[4];
+                            var savebutton = document.getElementById('save')
+                            savebutton.onclick = function(event){
+                                savetask(event, task_id)
+                            }
+                            var deletebutton = document.getElementById('delete')
+                            deletebutton.onclick = function(event){
+                                deletetask(event, task_id)
+                            }
                         })
 
                         if(!taskDetailsForm.style.visibility || taskDetailsForm.style.visibility==='hidden'){
@@ -319,6 +382,116 @@
             }
             getTaskInfo(window.location.href.split('/dashboard')[0])
         }
+
+        function deletetask(event, task_id){
+            event.preventDefault();
+
+            function sendtoDelete(address){
+                fetch(address+'/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        payload: {
+                            key: 'delete',
+                            task: task_id,
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'success') {
+                        window.location.href = '/dashboard';
+                    }
+                    else if(data.payload){
+                        sendtoDelete(data.payload.message)
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred saving task. Please try again later.');
+                })
+            }
+
+            sendtoDelete(window.location.href.split('/dashboard')[0])
+        }
+
+        function savetask(event, task_id){
+            event.preventDefault();
+            var form = document.getElementById('taskform');
+            var formData = {};
+
+            for (var i = 0; i < form.elements.length; i++) {
+                var element = form.elements[i];
+                if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
+                    formData[element.name] = element.value;
+                }
+            }
+
+            var title = formData.title || '';
+            var description = formData.description || '';
+            var dueDate = formData.dueDate || '';
+            var priority = formData.priority || '';
+            var status = formData.status || '';
+
+            function sendtask(address){
+                fetch(address+'/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        payload: {
+                            key: 'update',
+                            username: window.localStorage.getItem("username"),
+                            task_id: task_id,
+                            task_name: title,
+                            due_date: dueDate,
+                            priority: priority,
+                            status: status,
+                            description: description,
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'success') {
+                        window.location.href = '/dashboard';
+                    }
+                    else if(data.payload){
+                        sendtask(data.payload.message)
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred saving task. Please try again later.');
+                })
+            }
+
+            sendtask(window.location.href.split('/dashboard')[0])
+        }
+
+        function edittask(event){
+			event.preventDefault();
+			document.getElementById("edit").style.display = 'none';
+			document.getElementById("save").style.display = 'inline-block';
+			let form = document.getElementById("taskform");
+			var elements = form.elements;
+    
+            for (var i = 0; i < elements.length; i++) {
+                if (elements[i].tagName === 'SELECT') {
+                    elements[i].removeAttribute("disabled");
+                    var options = elements[i].getElementsByTagName('option');
+                    for (var j = 0; j < options.length; j++) {
+                        options[j].removeAttribute("disabled");
+                    }
+                } else {
+                    elements[i].removeAttribute("readonly");
+                    elements[i].removeAttribute("disabled");
+                }
+            }
+		}
 
         function createtask(event) {
             event.preventDefault()
@@ -380,6 +553,10 @@
 </head>
 
 <body>
+    <div id="menubar">
+        <div id="nameofuser"></div>
+        <button id="logout" onclick="window.location.href = '/authenticate'">Logout</button>
+    </div>
     <div class="container">
         <ul class="task-list">
             <!-- Task items displayed here -->
@@ -389,12 +566,11 @@
         </ul>
     </div>
     <button onclick="toggleCreateTaskForm()" class="create-task">Create Task</button>
-
     <div class="task-container"></div>
 
     <div class="create-task-container">
         <div class="create-task-form" id="createTaskForm" style="visibility: hidden;">
-            <p style="font-size: 25px; text-align: center; width: 100%; margin-top: 3px;">Create Task</p>
+            <p style="font-size: 25px; text-align: left; width: 100%; margin-top: 3px; margin-left: 10px;">Create Task</p>
             <form id="task-form" onsubmit="createtask(event)">
                 <input type="text" name="title" placeholder="Title" required><br>
                 <textarea name="description" placeholder="Description"></textarea><br>
@@ -412,13 +588,20 @@
 
     <div class="task-details-container" id="taskDetailsContainer">
         <div class="task-details-form" id="taskDetailsForm" style="visibility: hidden;">
-            <p style="font-size: 25px; text-align: center; width: 100%; margin-top: 3px;">Task Details</p>
+            <p style="font-size: 25px; text-align: left; width: calc(80% - 15px); margin-top: 3px; margin-left: 10px; display: inline-block;">Task Details</p>            
+            <button id="edit" onclick="edittask(event)">Edit Task</button>
+			<button id="save">Save Task</button>
             <form id="taskform">
                 <input type="text" name="title" placeholder="Title" readonly><br>
                 <textarea name="description" placeholder="Description" readonly></textarea><br>
                 <input type="date" name="dueDate" readonly><br>
-                <input type="text" name="priority" placeholder="Priority" readonly><br>
+                <select name="priority" aria-readonly="true">
+                    <option value="low" disabled>Low</option>
+                    <option value="medium" disabled>Medium</option>
+                    <option value="high" disabled>High</option>
+                </select> 
                 <input type="text" name="status" placeholder="Status" readonly><br>
+                <button id="delete">Delete Task</button>
             </form>
         </div>
     </div>

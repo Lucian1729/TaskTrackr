@@ -327,33 +327,27 @@ class Node():
             self.mydb.commit()
         
         if key == "delete":
-            username = self.staged["username"]
-            task_name = self.staged["task"]
+            task_id = self.staged["task"]
             with self.mydb.cursor() as cursor:
-                sql_check = "SELECT user_id FROM users WHERE username = %s"
-                cursor.execute(sql_check, (username,))
-                result = cursor.fetchone()
-                sql = "DELETE FROM tasks WHERE title = %s and user_id = %s"
-                cursor.execute(sql, (task_name, result[0],))
+                sql = "DELETE FROM tasks WHERE task_id = %s"
+                cursor.execute(sql, (task_id,))
             self.mydb.commit()
         
         if key == "update":
             username = self.staged["username"]
-            t= self.staged["t"]
-            p = self.staged["p"]
-            s = self.staged["s"]
-            d = self.staged["d"]
-            nt= self.staged["nt"]
-            np = self.staged["np"]
-            ns = self.staged["ns"]
-            nd = self.staged["nd"]
+            t = self.staged["task_id"]
+            task_name = self.staged["task_name"]
+            due_date = self.staged["due_date"]
+            priority = self.staged["priority"]
+            status = self.staged["status"]
+            description = self.staged["description"]
 
             with self.mydb.cursor() as cursor:
                 sql_check = "SELECT user_id FROM users WHERE username = %s"
                 cursor.execute(sql_check, (username,))
                 result = cursor.fetchone()
-                sql = "UPDATE tasks SET title = %s, description = %s, priority = %s, status = %s WHERE user_id = %s AND title = %s AND description = %s AND priority = %s AND status = %s"
-                cursor.execute(sql, (nt, nd, np, ns, result[0], t, d, p, s))
+                sql = "UPDATE tasks SET title = %s, description = %s, priority = %s, status = %s, due_date = %s WHERE task_id = %s"
+                cursor.execute(sql, (task_name, description, priority, status, due_date, t))
             self.mydb.commit()
             
         self.staged = None
